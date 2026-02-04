@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { type Task } from './utils/types'
 import { controlledTasks } from './utils/storageController'
+import { Todo } from './components/task'
 
 export default function App() {
-    const [input, setInput] = useState<string>('')
-    const [tasks, setTasks] = useState<Task[]>([])
-
-    useEffect(() => {
-        setTasks(controlledTasks.load())
-    }, [])
+    const inputRef = useRef<HTMLInputElement>(null)
+    const [tasks, setTasks] = useState<Task[]>(controlledTasks.load())
 
     useEffect(() => {
         controlledTasks.save(tasks)
@@ -17,17 +14,21 @@ export default function App() {
 
     const addTask = (task: Task): void => {
         setTasks(prev => [...prev, task])
-        setInput('')
     }
 
-    const updateTasks = (currentTask: Task): void => {
-        currentTask.done = !currentTask.done
+    const toggleTasks = (task: Task) => {
+        setTasks(prev =>
+            prev.map(t =>
+                t.id === task.id
+                    ? { ...t, done: !t.done }
+                    : t
+            )
+        )
     }
 
     const deleteTask = (task: Task): void => {
         setTasks(prev => prev.filter(t => t.id !== task.id))
     }
-
     return (
         <div className="todo-app">
             <header className="todo-header">
@@ -41,16 +42,18 @@ export default function App() {
                     type="text"
                     placeholder="Add a task..."
                     aria-label="Add a task"
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
+                    ref={inputRef}
                 />
                 <button className="todo-add" type="button" onClick={() => {
-                    addTask({
-                        id: tasks.length,
-                        text: input,
-                        done: false,
-                        createdAt: new Date()
-                    })
+                    if (inputRef.current && inputRef.current.value) {
+                        addTask({
+                            id: Date.now(),
+                            text: inputRef.current.value,
+                            done: false,
+                            createdAt: new Date().toDateString()
+                        })
+                        inputRef.current.value = ''
+                    }
                 }}>
                     Add
                 </button>
@@ -58,41 +61,16 @@ export default function App() {
 
             <ul className="todo-list">
                 {tasks.map(task => (
-                    <li className="todo-item" key={task.id}>
-                        <label className="todo-main">
-                            <input
-                                className="todo-check"
-                                type="checkbox"
-                                onChange={() => {
-                                    updateTasks(task)
-                                }} />
-                            <span className={task.done ? 'todo-text is-done' : 'todo-text'}>{task.text}</span>
-                        </label>
-                        <button className="todo-delete" type="button" onClick={() => {
-                            deleteTask(task)
-                        }}>
-                            Delete
-                        </button>
-                    </li>
+                    <Todo
+                        key={task.id}
+                        task={task}
+                        taskMutable={{
+                            add: addTask,
+                            toggle: toggleTasks,
+                            delete: deleteTask
+                        }}
+                    />
                 ))}
-                <li className="todo-item">
-                    <label className="todo-main">
-                        <input className="todo-check" type="checkbox" />
-                        <span className="todo-text">Finish the layout</span>
-                    </label>
-                    <button className="todo-delete" type="button">
-                        Delete
-                    </button>
-                </li>
-                <li className="todo-item">
-                    <label className="todo-main">
-                        <input className="todo-check" type="checkbox" defaultChecked />
-                        <span className="todo-text is-done">Buy milk</span>
-                    </label>
-                    <button className="todo-delete" type="button">
-                        Delete
-                    </button>
-                </li>
             </ul>
         </div>
     )
