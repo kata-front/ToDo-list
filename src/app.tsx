@@ -1,23 +1,32 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-
-type Task = {
-    id: number
-    text: string
-    done: boolean
-    createdAt: Date
-}
+import { type Task } from './utils/types'
+import { controlledTasks } from './utils/storageController'
 
 export default function App() {
     const [input, setInput] = useState<string>('')
     const [tasks, setTasks] = useState<Task[]>([])
 
     useEffect(() => {
-        const storedTasks = localStorage.getItem('tasks')
-        if (storedTasks) {
-            setTasks(JSON.parse(storedTasks))
-        }
+        setTasks(controlledTasks.load())
     }, [])
+
+    useEffect(() => {
+        controlledTasks.save(tasks)
+    }, [tasks])
+
+    const addTask = (task: Task): void => {
+        setTasks(prev => [...prev, task])
+        setInput('')
+    }
+
+    const updateTasks = (currentTask: Task): void => {
+        currentTask.done = !currentTask.done
+    }
+
+    const deleteTask = (task: Task): void => {
+        setTasks(prev => prev.filter(t => t.id !== task.id))
+    }
 
     return (
         <div className="todo-app">
@@ -36,17 +45,12 @@ export default function App() {
                     onChange={e => setInput(e.target.value)}
                 />
                 <button className="todo-add" type="button" onClick={() => {
-                    setTasks([
-                        ...tasks,
-                        {
-                            id: tasks.length,
-                            text: input,
-                            done: false,
-                            createdAt: new Date()
-                        }
-                    ])
-                    setInput('')
-                    localStorage.setItem('tasks', JSON.stringify(tasks))
+                    addTask({
+                        id: tasks.length,
+                        text: input,
+                        done: false,
+                        createdAt: new Date()
+                    })
                 }}>
                     Add
                 </button>
@@ -60,12 +64,12 @@ export default function App() {
                                 className="todo-check"
                                 type="checkbox"
                                 onChange={() => {
-                                    task.done = !task.done
+                                    updateTasks(task)
                                 }} />
                             <span className={task.done ? 'todo-text is-done' : 'todo-text'}>{task.text}</span>
                         </label>
                         <button className="todo-delete" type="button" onClick={() => {
-                            setTasks(tasks.filter(t => t.id !== task.id))
+                            deleteTask(task)
                         }}>
                             Delete
                         </button>
