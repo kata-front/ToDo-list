@@ -28,6 +28,10 @@ export const useTasks = () => {
 
         deleted(taskId: number): void {
             setTasks(prev => deleteTask(prev, taskId))
+        },
+
+        clearCompleted(): void {
+            setTasks(prev => prev.filter(task => !task.done))
         }
     }
 }
