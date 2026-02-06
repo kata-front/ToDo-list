@@ -8,8 +8,7 @@ export type Task = {
 export type PropsForTaskComponent = {
     task: Task
     taskMutable: {
-        add: (task: Task) => void
-        toggle: (task: Task) => void
-        delete: (task: Task) => void
+        toggle: (taskId: number) => void
+        deleted: (taskId: number) => void
     }
 }

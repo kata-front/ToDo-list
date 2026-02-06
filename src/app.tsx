@@ -1,34 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import './App.css'
-import { type Task } from './utils/types'
-import { controlledTasks } from './utils/storageController'
 import { Todo } from './components/task'
+import { useTasks } from './hooks/tasks'
 
 export default function App() {
     const inputRef = useRef<HTMLInputElement>(null)
-    const [tasks, setTasks] = useState<Task[]>(controlledTasks.load())
+    const {tasks, add, toggle, deleted} = useTasks()
 
-    useEffect(() => {
-        controlledTasks.save(tasks)
-    }, [tasks])
+    console.log('Render app')
 
-    const addTask = (task: Task): void => {
-        setTasks(prev => [...prev, task])
-    }
-
-    const toggleTasks = (task: Task) => {
-        setTasks(prev =>
-            prev.map(t =>
-                t.id === task.id
-                    ? { ...t, done: !t.done }
-                    : t
-            )
-        )
-    }
-
-    const deleteTask = (task: Task): void => {
-        setTasks(prev => prev.filter(t => t.id !== task.id))
-    }
     return (
         <div className="todo-app">
             <header className="todo-header">
@@ -46,12 +26,7 @@ export default function App() {
                 />
                 <button className="todo-add" type="button" onClick={() => {
                     if (inputRef.current && inputRef.current.value) {
-                        addTask({
-                            id: Date.now(),
-                            text: inputRef.current.value,
-                            done: false,
-                            createdAt: new Date().toDateString()
-                        })
+                        add(inputRef.current.value)
                         inputRef.current.value = ''
                     }
                 }}>
@@ -60,17 +35,17 @@ export default function App() {
             </div>
 
             <ul className="todo-list">
-                {tasks.map(task => (
-                    <Todo
+                {tasks.map(task => {
+                    console.log('Render task: ', task.id)
+                    return <Todo
                         key={task.id}
                         task={task}
                         taskMutable={{
-                            add: addTask,
-                            toggle: toggleTasks,
-                            delete: deleteTask
+                            toggle,
+                            deleted
                         }}
                     />
-                ))}
+                })}
             </ul>
         </div>
     )
