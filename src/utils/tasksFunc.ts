@@ -17,4 +17,8 @@ const deleteTask = (tasks: Task[], taskId: number) => {
     return tasks.filter(t => t.id !== taskId)
 }
 
-export {addTask, toggleTask, deleteTask}
+const clear_Compiled = (tasks: Task[]) => {
+    return tasks.filter(task => !task.done)
+}
+
+export {addTask, toggleTask, deleteTask, clear_Compiled}

@@ -7,8 +7,16 @@ export type Task = {
 
 export type PropsForTaskComponent = {
     task: Task
-    taskMutable: {
-        toggle: (taskId: number) => void
-        deleted: (taskId: number) => void
-    }
+}
+
+export type Filters = 'all' | 'active' | 'done'
+
+export type statesOfTasks = Record<'total' | 'done' | 'active' | 'progress', number>
+
+export type TasksContextType = {
+    state: Task[];
+    add(text: string): void;
+    toggle: (taskId: number) => void;
+    deleted: (taskId: number) => void;
+    clear_compiled(): void;
 }

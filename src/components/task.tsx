@@ -1,15 +1,18 @@
-import type { FC } from "react";
+import { memo, type FC } from "react";
 import type { PropsForTaskComponent } from "../utils/types";
+import { TasksContext, useTaskContext } from "../hooks/useTasksContext";
 
-export const Todo: FC<PropsForTaskComponent> = ({ task, taskMutable}) => {
-    return <li className={task.done ? 'todo-item is-done' : 'todo-item'} key={task.id}>
+const Todo: FC<PropsForTaskComponent> = memo(({ task }) => {
+    const { toggle, deleted } = useTaskContext(TasksContext)
+    console.log('Render task: ', task.id)
+    return <li className={task.done ? 'todo-item is-done' : 'todo-item'}>
         <label className="todo-main">
             <input
                 className="todo-check"
                 type="checkbox"
                 checked={task.done}
                 onChange={() => {
-                    taskMutable.toggle(task.id)
+                    toggle(task.id)
                 }} />
             <span className="todo-content">
                 <span className={task.done ? 'todo-text is-done' : 'todo-text'}>{task.text}</span>
@@ -17,9 +20,11 @@ export const Todo: FC<PropsForTaskComponent> = ({ task, taskMutable}) => {
             </span>
         </label>
         <button className="todo-delete" type="button" onClick={() => {
-            taskMutable.deleted(task.id)
+            deleted(task.id)
         }}>
             Delete
         </button>
     </li>
-}
+})
+
+export default Todo
